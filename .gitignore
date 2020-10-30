@@ -34,7 +34,8 @@ MANIFEST
 */.ipynb_checkpoints/*.ipynb
 
 # data
-data/
+data/**
+!data/**/.gitkeep
 
 # VS Code
 *.code-workspace

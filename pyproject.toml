@@ -15,6 +15,7 @@ fastcore = "^1.2.5"
 pylint = "^2.6.0"
 black = "^20.8b1"
 flake8 = "^3.8.4"
+boto3 = "^1.16.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
