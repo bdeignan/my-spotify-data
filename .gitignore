@@ -1,4 +1,3 @@
-data/
 .env
 _notes.txt
 
@@ -39,3 +38,10 @@ data/**
 
 # VS Code
 *.code-workspace
+**/.vscode/
+
+.gitignore
+
+.python-version
+
+**/.DS_Store
