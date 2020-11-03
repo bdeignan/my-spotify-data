@@ -18,12 +18,8 @@ def test_search_response_basic():
 
 
 def test_download_jpeg(tmp_path):
-    # Set up the image URL and filename
     image_url = "https://i.scdn.co/image/ab67616d0000b273bc97aa53df9447f9dc1b4dcb"
-    # filename = tmp_path / image_url.split("/")[-1]
-    file_path = (
-        tmp_path / image_url.split("/")[-1]
-    )  # tmp_path.mkdir("mydir").join("myfile")
+    file_path = tmp_path / image_url.split("/")[-1]
     new_file_path = download.download_image(image_url, file_path)
     assert new_file_path
     assert imghdr.what(new_file_path) == "jpeg"
