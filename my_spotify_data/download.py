@@ -1,7 +1,7 @@
 import logging
 import pathlib
 import shutil
-from typing import Union
+from typing import Union, List
 
 import requests
 
@@ -10,7 +10,7 @@ from my_spotify_data import Spotify as sp
 logger = logging.getLogger(__name__)
 
 
-def download_image(
+def get_image(
     image_url: str, save_path: Union[str, pathlib.Path]
 ) -> Union[pathlib.Path, None]:
     # Open the url image, set stream to True, this will return the stream content.
@@ -29,4 +29,16 @@ def download_image(
         return save_path
     else:
         logger.info("Image Couldn't be retreived")
+        return None
+
+
+def get_track_ids(response: dict) -> List[str]:
+    return [track["id"] for track in response["tracks"]["items"]]
+
+
+def get_features(track_id: str) -> Union[dict, None]:
+    try:
+        features = sp.audio_features([track_id])
+        return features[0]
+    except:
         return None
