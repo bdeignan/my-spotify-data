@@ -8,6 +8,7 @@ trackid, track name, artist, features_found (bool) and image url (None or Str)
 """
 import argparse
 import logging
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -42,6 +43,8 @@ song_features = [
     "duration_ms",
     "time_signature",
 ]
+
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 def is_valid_file(arg):
@@ -106,7 +109,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.info(f"Input file: {args.filepath}")
     logger.info(f"Save location for album images: {args.album_images}")
-    logger.info(f"Save location for final dataset: {args.output_path}")
+    timehex = "{0:x}".format(current_milli_time())
+    outfile = args.output_path / f"{args.filepath.stem}_augmented_{timehex}.csv"
+    logger.info(f"Save location for final dataset: {outfile}")
     args.album_images.mkdir(parents=True, exist_ok=True)
     args.output_path.mkdir(parents=True, exist_ok=True)
     # read in data
@@ -126,6 +131,9 @@ if __name__ == "__main__":
     # brute force album info
     # TODO: there's gotta be a smarter, async way to do this
     for i, row in history.iterrows():
+        logger.info(
+            f"Found {history['found_image'].sum()} out of {history.shape[0]} images so far."
+        )
         logger.info(f"Updating row: {(row['artist_name'],row['track_name'])}")
         data = download.search_track(
             artist_name=row["artist_name"], track_name=row["track_name"]
@@ -157,9 +165,13 @@ if __name__ == "__main__":
                     f"No album images found for track_id: {track_id}, name: {row.track_name}"
                 )
                 break
-            logger.debug(f"Searching...{curr_album}")
+            logger.debug(f"Searching album cover for: {curr_album}")
             if curr_album["images"]:
                 for image in curr_album["images"]:
+                    # exludes larger image files of height 640
+                    if image.get("height", 501) > 500:
+                        continue
+                    # check the rate limits here. I keep getting stuck
                     res = download.get_image(
                         image["url"], args.album_images / curr_album["id"]
                     )
@@ -181,10 +193,9 @@ if __name__ == "__main__":
                 logger.info(f"Found album info: {to_update}")
                 update_row_with_dict(to_update, history, i)
 
-    # save augmented data
-    history.to_csv(
-        args.output_path / f"{args.filepath.stem}_augmented.csv", index=False
-    )
-    logger.info(
-        f"FINISHED. Data saved to {args.output_path / f'{args.filepath.stem}_augmented.csv'}"
-    )
+        logger.info(f"Appending row {i} to final csv.")
+        history.iloc[[i]].to_csv(
+            outfile, mode="a", header=not outfile.exists(), index=False
+        )
+
+    logger.info(f"FINISHED. Data saved to {outfile}")

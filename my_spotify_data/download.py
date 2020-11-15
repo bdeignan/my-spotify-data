@@ -1,14 +1,29 @@
 import logging
 import pathlib
 import shutil
+import time
 from collections import defaultdict
-from typing import Union, List, DefaultDict
+from typing import DefaultDict, List, Union
 
 import requests
+from ratelimit import limits, sleep_and_retry
 
 from my_spotify_data import Spotify as sp
 
 logger = logging.getLogger(__name__)
+
+
+FIFTEEN_MINUTES = 900
+
+
+@sleep_and_retry
+@limits(calls=100, period=FIFTEEN_MINUTES)
+def call_api(url, stream=True):
+    response = requests.get(url, stream=stream)
+
+    if response.status_code != 200:
+        raise Exception("API response: {}".format(response.status_code))
+    return response
 
 
 def search_track(artist_name: str, track_name: str) -> DefaultDict:
@@ -23,8 +38,7 @@ def get_image(
     image_url: str, save_path: Union[str, pathlib.Path]
 ) -> Union[pathlib.Path, None]:
     # Open the url image, set stream to True, this will return the stream content.
-    r = requests.get(image_url, stream=True)
-
+    r = call_api(image_url)
     # Check if the image was retrieved successfully
     if r.status_code == 200:
         # Set decode_content value to True, otherwise the downloaded image file's size will be zero.
