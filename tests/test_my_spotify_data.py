@@ -36,3 +36,9 @@ def test_get_track_features():
     assert isinstance(feats, dict)
     empty_feats = download.get_features("madeup")
     assert empty_feats is None
+
+
+def test_get_album():
+    album = download.get_album(response)
+    data = next(album)
+    assert data["name"] == "Pablo Honey"

@@ -1,13 +1,22 @@
 import logging
 import pathlib
 import shutil
-from typing import Union, List
+from collections import defaultdict
+from typing import Union, List, DefaultDict
 
 import requests
 
 from my_spotify_data import Spotify as sp
 
 logger = logging.getLogger(__name__)
+
+
+def search_track(artist_name: str, track_name: str) -> DefaultDict:
+    result = defaultdict(list)
+    search_str = f"track:{track_name} artist:{artist_name}"
+    result.update(sp.search(search_str, type="track"))
+    logger.debug(f"Found search results: {'tracks' in result}")
+    return result
 
 
 def get_image(
@@ -42,3 +51,13 @@ def get_features(track_id: str) -> Union[dict, None]:
         return features[0]
     except:
         return None
+
+
+def get_album(response: dict) -> DefaultDict:
+    album = defaultdict(list)
+    if not "tracks" in response and not "items" in response["tracks"]:
+        yield album
+
+    for item in response["tracks"]["items"]:
+        if "album" in item:
+            yield item["album"]
