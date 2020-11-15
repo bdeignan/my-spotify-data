@@ -8,12 +8,18 @@ trackid, track name, artist, features_found (bool) and image url (None or Str)
 """
 import argparse
 import logging
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from my_spotify_data import download
 
 logger = logging.getLogger(__name__)
+log_path = Path(__file__).resolve().parents[1] / "logs"
+log_path.mkdir(parents=True, exist_ok=True)
+log_file = f"{Path(__file__).stem}_{datetime.now().strftime('%H_%M_%S_%d_%m_%Y')}.log"
+fileHandler = logging.FileHandler(log_path / log_file)
+logger.addHandler(fileHandler)
 
 
 song_features = [
@@ -182,30 +188,3 @@ if __name__ == "__main__":
     logger.info(
         f"FINISHED. Data saved to {args.output_path / f'{args.filepath.stem}_augmented.csv'}"
     )
-
-# for artist, song in history:
-
-# found_image                           NaN
-# album_name                            NaN
-# album_id                              NaN
-# album_uri                             NaN
-# album_release_date                    NaN
-# album_image_url                       NaN
-#     # get track ids
-#     get_track_ids(r)
-#     # get song features
-#     get song features(r)
-#     found_image = False
-#     for item in r[tracls][items]
-#         album name = item[album][name]
-#         album id = ...
-#         album uri ...
-#         album release date = ...
-#         album images = [image[url] for image in item[album][images]]
-#         while not found_image:
-#             for url in album images:
-#                 image_path = download_image(...)
-#                 found_image = image_path != None
-#         album image = image_path
-#         if found_image:
-#             break # next song
